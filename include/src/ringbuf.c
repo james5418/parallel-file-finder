@@ -1,15 +1,13 @@
 #include "ringbuf.h"
-#include <stdatomic.h>
-#include <stdint.h>
-#include <stdlib.h>
 
-void init_ringbuf(struct ringbuf** ringbuf) {
-    struct ringbuf* rb = calloc(1, sizeof(struct ringbuf));
+void init_ringbuf(struct ringbuf* ringbuf) {
+// void init_ringbuf(struct ringbuf** ringbuf) {
+    // struct ringbuf* rb = calloc(1, sizeof(struct ringbuf));
     rb->head = ATOMIC_VAR_INIT(0);
     rb->tail = ATOMIC_VAR_INIT(0);
     rb->capacity = 4096; // Default 4096
     rb->buf = calloc(4096, sizeof(char*));
-    *ringbuf = rb;
+    // *ringbuf = rb;
 }
 
 void destroy_ringbuf(struct ringbuf* ringbuf) {
@@ -17,7 +15,7 @@ void destroy_ringbuf(struct ringbuf* ringbuf) {
         if (ringbuf->buf) {
             free(ringbuf->buf);
         }
-        free(ringbuf);
+        // free(ringbuf);
     }
 }
 

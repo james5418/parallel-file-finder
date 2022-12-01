@@ -9,6 +9,7 @@ void* read_directory(void* data) {
         
         dir_path = pop_ringbuf(&dir_queue);
         scan_directory(dir_path);
+        free(dir_path);  // no longer need it
     }
 
     pthread_exit(0);
@@ -31,9 +32,11 @@ void scan_directory(char *dir_path){
 
         if(S_ISDIR(st.st_mode)){
             push_ringbuf(&dir_queue, entry_path);
+            sem_post(&dir_queue_sem);
         }
         else{
             push_ringbuf(&file_queue, entry_path);
+            sem_post(&file_queue_sem);
         }
     }
     closedir(dir);
@@ -51,6 +54,8 @@ void* match_pattern(void* data) {
         char* file_path = pop_ringbuf(&file_queue);
         if (pattern_matched(file_path))
             append_list(matched_files_local, file_path);
+        else
+            free(file_path);  // no longer need it
     }
 
     return matched_files_local;
@@ -66,7 +71,8 @@ _Bool pattern_matched(char* file_path) {
 
     // *text*
     if (pattern[0] == '*' && pattern[p_len - 1] == '*') {
-        // TODO: KMP or 2-way algorithm
+        // -2 to excludes the '*'
+        return KMPSearch(filename, f_len, pattern + 1, p_len - 2);
 
     // *text
     } else if (pattern[0] == '*') {

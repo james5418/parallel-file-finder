@@ -1,6 +1,6 @@
 CC=gcc
 CCFLAGS=-I include -O3 -Wall
-OBJS=objs/arg_handler.o objs/list.o objs/main.o objs/ringbuf.o objs/worker.o
+OBJS=objs/arg_handler.o objs/KMP.o objs/list.o objs/main.o objs/ringbuf.o objs/worker.o
 EXE=pp-find
 
 .PHONY: all clean

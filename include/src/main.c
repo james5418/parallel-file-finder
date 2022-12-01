@@ -25,8 +25,41 @@ int main(int argc, char* argv[]) {
     create_threads(dir_tids, read_directory);
     create_threads(file_tids, match_pattern);
 
-    // TODO: main thread: special dir worker
-    // TODO: determine when to finish
+    scan_directory(starting_dir);
+
+    int ret;
+    while((ret = sem_trywait(&dir_queue_sem))){
+        if(ret == 0){
+            char *dir_path = pop_ringbuf(&dir_queue);
+            scan_directory(dir_path);
+            free(dir_path);  // no longer need it
+        }
+        else if(ret==-1 && errno==EAGAIN){
+            int blocked_dir_threads;
+            sem_getvalue(&dir_queue_sem, &blocked_dir_threads);
+            blocked_dir_threads *= -1;
+            
+            if(blocked_dir_threads == dir_thread_num - 1){
+                int blocked_file_threads;
+
+                // check whether file matching task also finished
+                do {
+                    sem_getvalue(&file_queue_sem, &blocked_file_threads);
+                    blocked_file_threads *= -1;
+                } while (blocked_file_threads < file_thread_num);
+
+                finish = true;
+
+                // wake all threads
+                for (int i = 1; i < dir_thread_num; i++)
+                    sem_post(&dir_queue_sem);
+                for (int i = 0; i < file_thread_num; i++)
+                    sem_post(&file_queue_sem);
+
+                break;
+            }
+        }
+    }
 
     join_threads(dir_tids, NULL);
     join_threads(file_tids, merge_lists);
@@ -60,10 +93,8 @@ void clean(void) {
     destroy_ringbuf(&dir_queue);
     destroy_ringbuf(&file_queue);
 
+    // it also frees the memory space allocated for the file paths
     destroy_list(&matched_files);
-
-    // TODO: free all file path strings
-    // with an array of lists of pointers
 }
 
 int create_threads(pthread_t tids[], int T, void* (*work)(void*)) {

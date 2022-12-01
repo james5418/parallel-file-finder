@@ -9,11 +9,11 @@
 #include <libgen.h>
 
 #include "ringbuf.h"
+#include "KMP.h"
 
 #define MAX_FILE_NUM 16384
 
 extern char* pattern;
-extern char* starting_dir;
 
 extern _Bool finish;
 extern sem_t dir_queue_sem;

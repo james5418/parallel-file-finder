@@ -10,6 +10,7 @@ void destroy_list(struct List* list) {
 
     while (curr) {
         next = curr->next;
+        free(curr->file_path);
         free(curr);
         curr = next;
     }
