@@ -9,7 +9,7 @@ void parse_args(int argc, char* argv[]) {
 
     starting_dir = NULL;
 
-    while ((opt = getopts(argc, argv, "p:d:t:")) != -1) {
+    while ((opt = getopt(argc, argv, "p:d:t:")) != -1) {
         switch (opt) {
         case 'p':
             copy_string(pattern, optarg);
@@ -21,7 +21,7 @@ void parse_args(int argc, char* argv[]) {
             thread_num = (int) strtol(optarg, NULL, 10);
             break;
         default:
-            print_usage();
+            print_usage(argv[0]);
         }
     }
 
@@ -38,7 +38,7 @@ void copy_string(char* dst, char* src) {
     strncpy(dst, src, n);
 }
 
-void print_usage(void) {
-    fprintf(stderr, "Usage: %s -p <pattern> [-d <starting directory>] [-t <thread number>]\n", argv[0]);
+void print_usage(char* exe_name) {
+    fprintf(stderr, "Usage: %s -p <pattern> [-d <starting directory>] [-t <thread number>]\n", exe_name);
     exit(1);
 }

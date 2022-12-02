@@ -1,13 +1,16 @@
 #ifndef WORKER_H
 #define WORKER_H
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <semaphore.h>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <string.h>
 #include <libgen.h>
+#include <pthread.h>
 
+#include "list.h"
 #include "ringbuf.h"
 #include "KMP.h"
 

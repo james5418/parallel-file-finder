@@ -36,7 +36,7 @@ _Bool KMPSearch(char* text, size_t n, char* pattern, size_t m) {
 }
 
 // Fills lps[] for given pattern pattern[0..m-1]
-static void computeLPSArray(char* pattern, int* lps, size_t m) {
+void computeLPSArray(char* pattern, int* lps, size_t m) {
     // length of the previous longest prefix suffix
     int len = 0;
 

@@ -3,11 +3,15 @@
 void init_ringbuf(struct ringbuf* ringbuf) {
 // void init_ringbuf(struct ringbuf** ringbuf) {
     // struct ringbuf* rb = calloc(1, sizeof(struct ringbuf));
-    rb->head = ATOMIC_VAR_INIT(0);
-    rb->tail = ATOMIC_VAR_INIT(0);
-    rb->capacity = 4096; // Default 4096
-    rb->buf = calloc(4096, sizeof(char*));
+    // rb->head = ATOMIC_VAR_INIT(0);
+    // rb->tail = ATOMIC_VAR_INIT(0);
+    // rb->capacity = 4096; // Default 4096
+    // rb->buf = calloc(4096, sizeof(char*));
     // *ringbuf = rb;
+    ringbuf->head = ATOMIC_VAR_INIT(0);
+    ringbuf->tail = ATOMIC_VAR_INIT(0);
+    ringbuf->capacity = 4096; // Default 4096
+    ringbuf->buf = calloc(4096, sizeof(char*));
 }
 
 void destroy_ringbuf(struct ringbuf* ringbuf) {

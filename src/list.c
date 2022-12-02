@@ -31,7 +31,7 @@ void append_list(struct List* list, char* file_path) {
     }
 }
 
-void concat_list(struct List* list_dst, struct List* list_src) {
+void concat_lists(struct List* list_dst, struct List* list_src) {
     if (!list_src->head)
         return;
 

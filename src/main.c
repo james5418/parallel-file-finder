@@ -22,8 +22,8 @@ int main(int argc, char* argv[]) {
     pthread_t dir_tids[dir_thread_num - 1];  // reserve 1 for the main thread
     pthread_t file_tids[file_thread_num];
 
-    create_threads(dir_tids, read_directory);
-    create_threads(file_tids, match_pattern);
+    create_threads(dir_tids, dir_thread_num, read_directory);
+    create_threads(file_tids, file_thread_num, match_pattern);
 
     scan_directory(starting_dir);
 
@@ -61,10 +61,10 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    join_threads(dir_tids, NULL);
-    join_threads(file_tids, merge_lists);
+    join_threads(dir_tids, dir_thread_num, NULL);
+    join_threads(file_tids, file_thread_num, merge_lists);
 
-    struct ListNode* curr = matched_files->head;
+    struct ListNode* curr = matched_files.head;
     for (; curr; curr = curr->next)
         puts(curr->file_path);
 
@@ -97,23 +97,24 @@ void clean(void) {
     destroy_list(&matched_files);
 }
 
-int create_threads(pthread_t tids[], int T, void* (*work)(void*)) {
+void create_threads(pthread_t tids[], int T, void* (*work)(void*)) {
     for (int i = 0; i < T; i++)
-        pthread_create(tid + i, NULL, work, NULL);
+        pthread_create(tids + i, NULL, work, NULL);
 }
 
-int join_threads(pthread_t tids[], int T, void* (*post_hook)(void*)) {
+void join_threads(pthread_t tids[], int T, void* (*post_hook)(void*)) {
     void* res;
     for (int i = 0; i < T; i++) {
-        pthread_join(tid[i], &res);
+        pthread_join(tids[i], &res);
         if (post_hook)
             post_hook(res);
     }
 }
 
 void* merge_lists(void* list) {
-    concat_lists(matched_files, list);
+    concat_lists(&matched_files, (struct List*) list);
     // we just free the head and tail pointers of the list
     // not the nodes of that list
     free(list);
+    return NULL;
 }

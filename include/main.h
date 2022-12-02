@@ -15,8 +15,8 @@
 void init(void);
 void clean(void);
 
-int create_threads(pthread_t tids[], int T, void* (*work)(void*));
-int join_threads(pthread_t tids[], int T, void* (*post_hook)(void*));
+void create_threads(pthread_t tids[], int T, void* (*work)(void*));
+void join_threads(pthread_t tids[], int T, void* (*post_hook)(void*));
 
 void* merge_lists(void* list);
 
