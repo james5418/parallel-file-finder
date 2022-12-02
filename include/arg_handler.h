@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 void parse_args(int, char**);
-void print_usage(char* exe_name);
+void print_usage_and_exit(char* exe_name);
 void copy_string(char* dst, char* src);
 
 #endif
