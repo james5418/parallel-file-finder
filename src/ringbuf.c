@@ -1,13 +1,6 @@
 #include "ringbuf.h"
 
 void init_ringbuf(struct ringbuf* ringbuf) {
-// void init_ringbuf(struct ringbuf** ringbuf) {
-    // struct ringbuf* rb = calloc(1, sizeof(struct ringbuf));
-    // rb->head = ATOMIC_VAR_INIT(0);
-    // rb->tail = ATOMIC_VAR_INIT(0);
-    // rb->capacity = 4096; // Default 4096
-    // rb->buf = calloc(4096, sizeof(char*));
-    // *ringbuf = rb;
     ringbuf->head = ATOMIC_VAR_INIT(0);
     ringbuf->tail = ATOMIC_VAR_INIT(0);
     ringbuf->capacity = 4096; // Default 4096
@@ -15,12 +8,9 @@ void init_ringbuf(struct ringbuf* ringbuf) {
 }
 
 void destroy_ringbuf(struct ringbuf* ringbuf) {
-    if (ringbuf) {
-        if (ringbuf->buf) {
-            free(ringbuf->buf);
-        }
-        // free(ringbuf);
-    }
+    if (!ringbuf || !ringbuf->buf)
+        return;
+    free(ringbuf->buf);
 }
 
 void push_ringbuf(struct ringbuf* ringbuf, char* item) {
@@ -61,4 +51,10 @@ char* pop_ringbuf(struct ringbuf* ringbuf) {
     atomic_store_explicit(&ringbuf->head, new_head, memory_order_release);
     char* result = ringbuf->buf[head];
     return result;
+}
+
+_Bool is_empty_ringbuf(struct ringbuf* ringbuf) {
+    uint64_t head = atomic_load_explicit(&ringbuf->head, memory_order_relaxed);
+    uint64_t tail = atomic_load_explicit(&ringbuf->tail, memory_order_relaxed);
+    return head == tail;
 }

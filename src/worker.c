@@ -26,6 +26,7 @@ void scan_directory(char *dir_path){
 
         char *entry_path = (char*)malloc(PATH_MAX);
         sprintf(entry_path, "%s/%s", dir_path, name);
+        puts(entry_path);
 
         struct stat st;
         stat(entry_path, &st);
@@ -33,6 +34,7 @@ void scan_directory(char *dir_path){
         if(S_ISDIR(st.st_mode)){
             push_ringbuf(&dir_queue, entry_path);
             sem_post(&dir_queue_sem);
+            __sync_fetch_and_add(&requested_dir_num, 1);
         }
         else{
             push_ringbuf(&file_queue, entry_path);
@@ -40,6 +42,7 @@ void scan_directory(char *dir_path){
         }
     }
     closedir(dir);
+    __sync_fetch_and_add(&handled_dir_num, 1);
 }
 
 
@@ -52,6 +55,7 @@ void* match_pattern(void* data) {
         if (finish) break;
 
         char* file_path = pop_ringbuf(&file_queue);
+        puts(file_path);
         if (pattern_matched(file_path))
             append_list(matched_files_local, file_path);
         else

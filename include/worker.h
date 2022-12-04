@@ -22,6 +22,9 @@ extern _Bool finish;
 extern sem_t dir_queue_sem;
 extern sem_t file_queue_sem;
 
+extern int requested_dir_num;
+extern int handled_dir_num;
+
 extern struct ringbuf dir_queue;
 extern struct ringbuf file_queue;
 

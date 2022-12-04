@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdatomic.h>
 
 struct ringbuf {
@@ -13,9 +14,9 @@ struct ringbuf {
 };
 
 void init_ringbuf(struct ringbuf* ringbuf);
-// void init_ringbuf(struct ringbuf** ringbuf);
 void destroy_ringbuf(struct ringbuf* ringbuf);
 void push_ringbuf(struct ringbuf* ringbuf, char* item);
 char* pop_ringbuf(struct ringbuf* ringbuf);
+_Bool is_empty_ringbuf(struct ringbuf* ringbuf);
 
 #endif

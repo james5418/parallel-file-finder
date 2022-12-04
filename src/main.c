@@ -8,6 +8,9 @@ _Bool finish = false;
 sem_t dir_queue_sem;
 sem_t file_queue_sem;
 
+int requested_dir_num = 1;
+int handled_dir_num = 0;
+
 struct ringbuf dir_queue;
 struct ringbuf file_queue;
 
@@ -27,27 +30,15 @@ int main(int argc, char* argv[]) {
 
     scan_directory(starting_dir);
 
-    int ret;
-    while((ret = sem_trywait(&dir_queue_sem))){
-        if(ret == 0){
+    while (true) {
+        int ret = sem_trywait(&dir_queue_sem);
+
+        if (ret == 0) {
             char *dir_path = pop_ringbuf(&dir_queue);
             scan_directory(dir_path);
             free(dir_path);  // no longer need it
-        }
-        else if(ret==-1 && errno==EAGAIN){
-            int blocked_dir_threads;
-            sem_getvalue(&dir_queue_sem, &blocked_dir_threads);
-            blocked_dir_threads *= -1;
-            
-            if(blocked_dir_threads == dir_thread_num - 1){
-                int blocked_file_threads;
-
-                // check whether file matching task also finished
-                do {
-                    sem_getvalue(&file_queue_sem, &blocked_file_threads);
-                    blocked_file_threads *= -1;
-                } while (blocked_file_threads < file_thread_num);
-
+        } else if (ret == -1 && errno == EAGAIN) {
+            if (requested_dir_num == handled_dir_num && is_empty_ringbuf(&file_queue)) {
                 finish = true;
 
                 // wake all threads
