@@ -1,4 +1,5 @@
 #include "main.h"
+#include <pthread.h>
 
 char* pattern;
 char* starting_dir;
@@ -52,7 +53,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    join_threads(dir_tids, dir_thread_num, NULL);
+    join_threads(dir_tids, dir_thread_num - 1, NULL);
     join_threads(file_tids, file_thread_num, merge_lists);
 
     struct ListNode* curr = matched_files.head;
@@ -63,6 +64,8 @@ int main(int argc, char* argv[]) {
 }
 
 void init(void) {
+    thread_num = 4;
+
     sem_init(&dir_queue_sem, 0, 0);
     sem_init(&file_queue_sem, 0, 0);
 

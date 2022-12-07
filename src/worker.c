@@ -26,7 +26,6 @@ void scan_directory(char *dir_path){
 
         char *entry_path = (char*)malloc(PATH_MAX);
         sprintf(entry_path, "%s/%s", dir_path, name);
-        puts(entry_path);
 
         struct stat st;
         stat(entry_path, &st);
@@ -55,7 +54,6 @@ void* match_pattern(void* data) {
         if (finish) break;
 
         char* file_path = pop_ringbuf(&file_queue);
-        puts(file_path);
         if (pattern_matched(file_path))
             append_list(matched_files_local, file_path);
         else
@@ -90,15 +88,15 @@ _Bool pattern_matched(char* file_path) {
             j--;
         }
 
-        return j == -1;
+        return j == 0;  // stops at the index of '*'
 
     // text*
     } else if (pattern[p_len - 1] == '*') {
         // -1 to exclude the '*'
-        return (p_len - 1) <= f_len ? strncmp(filename, pattern, p_len - 1) : false;
+        return (p_len - 1) <= f_len ? (strncmp(filename, pattern, p_len - 1) == 0) : false;
 
     // text
     } else {
-        return p_len == f_len ? (strcmp(filename, pattern) == 0) : false;
+        return p_len == f_len ? (strncmp(filename, pattern, p_len) == 0) : false;
     }
 }

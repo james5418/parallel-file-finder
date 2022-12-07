@@ -54,7 +54,7 @@ char* pop_ringbuf(struct ringbuf* ringbuf) {
 }
 
 _Bool is_empty_ringbuf(struct ringbuf* ringbuf) {
-    uint64_t head = atomic_load_explicit(&ringbuf->head, memory_order_relaxed);
-    uint64_t tail = atomic_load_explicit(&ringbuf->tail, memory_order_relaxed);
+    uint64_t head = atomic_load_explicit(&ringbuf->head, memory_order_acquire);
+    uint64_t tail = atomic_load_explicit(&ringbuf->tail, memory_order_acquire);
     return head == tail;
 }
