@@ -22,9 +22,9 @@ int main(int argc, char* argv[]) {
     parse_args(argc, argv);
     init();
 
-    int dir_thread_num = thread_num / 2;
-    int file_thread_num = thread_num - dir_thread_num;
-    pthread_t dir_tids[dir_thread_num - 1];  // reserve 1 for the main thread
+    int file_thread_num = thread_num / 2;
+    int dir_thread_num = thread_num - file_thread_num - 1;  // reserve 1 for the main thread
+    pthread_t dir_tids[dir_thread_num];
     pthread_t file_tids[file_thread_num];
 
     create_threads(dir_tids, dir_thread_num, read_directory);
@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
                 finish = true;
 
                 // wake all threads
-                for (int i = 1; i < dir_thread_num; i++) sem_post(&dir_queue_sem);
+                for (int i = 0; i < dir_thread_num; i++) sem_post(&dir_queue_sem);
                 for (int i = 0; i < file_thread_num; i++) sem_post(&file_queue_sem);
 
                 break;
@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    join_threads(dir_tids, dir_thread_num - 1, NULL);
+    join_threads(dir_tids, dir_thread_num, NULL);
     join_threads(file_tids, file_thread_num, merge_lists);
 
     struct ListNode* curr = matched_files.head;
