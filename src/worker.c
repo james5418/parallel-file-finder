@@ -71,8 +71,12 @@ _Bool pattern_matched(char* file_path) {
     size_t p_len = strlen(pattern);
     size_t f_len = strlen(filename);
 
+    // *
+    if (p_len == 1 && pattern[0] == '*') {
+        return true;
+
     // *text*
-    if (pattern[0] == '*' && pattern[p_len - 1] == '*') {
+    } else if (pattern[0] == '*' && pattern[p_len - 1] == '*') {
         // -2 to excludes the '*'
         return KMPSearch(filename, f_len, pattern + 1, p_len - 2);
 
