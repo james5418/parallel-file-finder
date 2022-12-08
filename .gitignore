@@ -1,3 +1,4 @@
 objs/
 pp-find
 compile_flags.txt
+.ccls-cache/
