@@ -37,6 +37,14 @@ void parse_args(int argc, char *argv[]) {
         starting_dir[0] = '.';
         starting_dir[1] = '\0';
     }
+
+    // if dir not exist
+    struct stat stats;
+    stat(starting_dir, &stats);
+    if (!S_ISDIR(stats.st_mode)) {
+        fprintf(stderr, "Directory does not exist: %s\n", starting_dir);
+        exit(1);
+    }
 }
 
 void copy_string(char **dst, const char *src) {
