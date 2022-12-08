@@ -1,4 +1,5 @@
 #include "main.h"
+
 #include <pthread.h>
 
 char* pattern;
@@ -35,7 +36,7 @@ int main(int argc, char* argv[]) {
         int ret = sem_trywait(&dir_queue_sem);
 
         if (ret == 0) {
-            char *dir_path = pop_ringbuf(&dir_queue);
+            char* dir_path = pop_ringbuf(&dir_queue);
             scan_directory(dir_path);
             free(dir_path);  // no longer need it
         } else if (ret == -1 && errno == EAGAIN) {
@@ -43,10 +44,8 @@ int main(int argc, char* argv[]) {
                 finish = true;
 
                 // wake all threads
-                for (int i = 1; i < dir_thread_num; i++)
-                    sem_post(&dir_queue_sem);
-                for (int i = 0; i < file_thread_num; i++)
-                    sem_post(&file_queue_sem);
+                for (int i = 1; i < dir_thread_num; i++) sem_post(&dir_queue_sem);
+                for (int i = 0; i < file_thread_num; i++) sem_post(&file_queue_sem);
 
                 break;
             }
@@ -57,8 +56,7 @@ int main(int argc, char* argv[]) {
     join_threads(file_tids, file_thread_num, merge_lists);
 
     struct ListNode* curr = matched_files.head;
-    for (; curr; curr = curr->next)
-        puts(curr->file_path);
+    for (; curr; curr = curr->next) puts(curr->file_path);
 
     return 0;
 }
@@ -92,21 +90,19 @@ void clean(void) {
 }
 
 void create_threads(pthread_t tids[], int T, void* (*work)(void*)) {
-    for (int i = 0; i < T; i++)
-        pthread_create(tids + i, NULL, work, NULL);
+    for (int i = 0; i < T; i++) pthread_create(tids + i, NULL, work, NULL);
 }
 
 void join_threads(pthread_t tids[], int T, void* (*post_hook)(void*)) {
     void* res;
     for (int i = 0; i < T; i++) {
         pthread_join(tids[i], &res);
-        if (post_hook)
-            post_hook(res);
+        if (post_hook) post_hook(res);
     }
 }
 
 void* merge_lists(void* list) {
-    concat_lists(&matched_files, (struct List*) list);
+    concat_lists(&matched_files, (struct List*)list);
     // we just free the head and tail pointers of the list
     // not the nodes of that list
     free(list);

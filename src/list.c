@@ -1,8 +1,8 @@
 #include "list.h"
 
-void init_list(struct List* list) {
-    list->head = list->tail = NULL;
-}
+#include <stdio.h>
+
+void init_list(struct List* list) { list->head = list->tail = NULL; }
 
 void destroy_list(struct List* list) {
     struct ListNode* curr = list->head;
@@ -17,7 +17,7 @@ void destroy_list(struct List* list) {
 }
 
 void append_list(struct List* list, char* file_path) {
-    struct ListNode* new_node = (struct ListNode*) malloc(sizeof(struct ListNode));
+    struct ListNode* new_node = (struct ListNode*)malloc(sizeof(struct ListNode));
 
     new_node->file_path = file_path;
     new_node->next = NULL;
@@ -32,8 +32,7 @@ void append_list(struct List* list, char* file_path) {
 }
 
 void concat_lists(struct List* list_dst, struct List* list_src) {
-    if (!list_src->head)
-        return;
+    if (!list_src->head) return;
 
     if (list_dst->head)
         list_dst->tail->next = list_src->head;

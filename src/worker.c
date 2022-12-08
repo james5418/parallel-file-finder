@@ -6,7 +6,6 @@ void* read_directory(void* data) {
     while(!finish){
         sem_wait(&dir_queue_sem);
         if (finish) break;
-        
         dir_path = pop_ringbuf(&dir_queue);
         scan_directory(dir_path);
         free(dir_path);  // no longer need it
@@ -56,8 +55,9 @@ void* match_pattern(void* data) {
         char* file_path = pop_ringbuf(&file_queue);
         if (pattern_matched(file_path))
             append_list(matched_files_local, file_path);
-        else
+        else {
             free(file_path);  // no longer need it
+        }
     }
 
     return matched_files_local;
