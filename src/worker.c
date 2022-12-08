@@ -97,10 +97,10 @@ _Bool pattern_matched(char* file_path) {
     // text*
     } else if (pattern[p_len - 1] == '*') {
         // -1 to exclude the '*'
-        return (p_len - 1) <= f_len ? (strncmp(filename, pattern, p_len - 1) == 0) : false;
+        return (p_len - 1) <= f_len && strncmp(filename, pattern, p_len - 1) == 0;
 
     // text
     } else {
-        return p_len == f_len ? (strncmp(filename, pattern, p_len) == 0) : false;
+        return p_len == f_len && strncmp(filename, pattern, p_len) == 0;
     }
 }
