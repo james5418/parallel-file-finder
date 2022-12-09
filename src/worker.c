@@ -21,6 +21,7 @@ void scan_directory(char *dir_path){
     dir = opendir(dir_path);
     if(dir == NULL){
         fprintf(stderr, "Cannot open %s\n", dir_path);
+        __sync_fetch_and_add(&handled_dir_num, 1);
         return;
     }
 
