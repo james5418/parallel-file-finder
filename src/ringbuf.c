@@ -67,6 +67,7 @@ char* pop_ringbuf(struct ringbuf* ringbuf) {
                                                              memory_order_acquire);
     }
     char* result = ringbuf->buf[head];
+    ringbuf->buf[head] = NULL;
     return result;
 }
 
