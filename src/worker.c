@@ -19,6 +19,16 @@ void scan_directory(char *dir_path){
     struct dirent* dent;
 
     dir = opendir(dir_path);
+    if(dir == NULL){
+        fprintf(stderr, "Cannot open %s\n", dir_path);
+        return;
+    }
+
+    int end = strlen(dir_path) - 1;
+    if(dir_path[end] == '/'){
+        dir_path[end] = '\0';
+    }
+
     while((dent = readdir(dir)) != NULL){
         char *name = dent->d_name;
         if((strcmp(name, ".")==0) || (strcmp(name, "..")==0)) continue;
