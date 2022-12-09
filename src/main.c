@@ -10,8 +10,8 @@ _Bool finish = false;
 sem_t dir_queue_sem;
 sem_t file_queue_sem;
 
-int requested_dir_num = 1;
-int handled_dir_num = 0;
+atomic_int requested_dir_num = ATOMIC_VAR_INIT(1);
+atomic_int handled_dir_num = ATOMIC_VAR_INIT(0);
 
 struct ringbuf dir_queue;
 struct ringbuf file_queue;
@@ -40,7 +40,9 @@ int main(int argc, char* argv[]) {
             scan_directory(dir_path);
             free(dir_path);  // no longer need it
         } else if (ret == -1 && errno == EAGAIN) {
-            if (requested_dir_num == handled_dir_num && is_empty_ringbuf(&file_queue)) {
+            int requested = atomic_load_explicit(&requested_dir_num, memory_order_acquire);
+            int handled = atomic_load_explicit(&handled_dir_num, memory_order_acquire);
+            if (requested == handled && is_empty_ringbuf(&file_queue)) {
                 finish = true;
 
                 // wake all threads

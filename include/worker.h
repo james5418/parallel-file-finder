@@ -9,6 +9,7 @@
 #include <string.h>
 #include <libgen.h>
 #include <pthread.h>
+#include <stdatomic.h>
 
 #include "list.h"
 #include "ringbuf.h"
@@ -22,8 +23,8 @@ extern _Bool finish;
 extern sem_t dir_queue_sem;
 extern sem_t file_queue_sem;
 
-extern int requested_dir_num;
-extern int handled_dir_num;
+extern atomic_int requested_dir_num;
+extern atomic_int handled_dir_num;
 
 extern struct ringbuf dir_queue;
 extern struct ringbuf file_queue;

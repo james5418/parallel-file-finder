@@ -1,9 +1,9 @@
 #include "worker.h"
 
 void* read_directory(void* data) {
-    char *dir_path;
+    char* dir_path;
 
-    while(!finish){
+    while (!finish) {
         sem_wait(&dir_queue_sem);
         if (finish) break;
         dir_path = pop_ringbuf(&dir_queue);
@@ -14,49 +14,47 @@ void* read_directory(void* data) {
     pthread_exit(0);
 }
 
-void scan_directory(char *dir_path){
-    DIR *dir;
+void scan_directory(char* dir_path) {
+    DIR* dir;
     struct dirent* dent;
 
     dir = opendir(dir_path);
-    if(dir == NULL){
+    if (dir == NULL) {
         fprintf(stderr, "Cannot open %s\n", dir_path);
-        __sync_fetch_and_add(&handled_dir_num, 1);
+        atomic_fetch_add_explicit(&handled_dir_num, 1, memory_order_acq_rel);
         return;
     }
 
     int end = strlen(dir_path) - 1;
-    if(dir_path[end] == '/'){
+    if (dir_path[end] == '/') {
         dir_path[end] = '\0';
     }
 
-    while((dent = readdir(dir)) != NULL){
-        char *name = dent->d_name;
-        if((strcmp(name, ".")==0) || (strcmp(name, "..")==0)) continue;
+    while ((dent = readdir(dir)) != NULL) {
+        char* name = dent->d_name;
+        if ((strcmp(name, ".") == 0) || (strcmp(name, "..") == 0)) continue;
 
-        char *entry_path = (char*)malloc(PATH_MAX);
+        char* entry_path = (char*)malloc(PATH_MAX);
         sprintf(entry_path, "%s/%s", dir_path, name);
 
         struct stat st;
         stat(entry_path, &st);
 
-        if(S_ISDIR(st.st_mode)){
+        if (S_ISDIR(st.st_mode)) {
             push_ringbuf(&dir_queue, entry_path);
             sem_post(&dir_queue_sem);
-            __sync_fetch_and_add(&requested_dir_num, 1);
-        }
-        else{
+            atomic_fetch_add_explicit(&requested_dir_num, 1, memory_order_acq_rel);
+        } else {
             push_ringbuf(&file_queue, entry_path);
             sem_post(&file_queue_sem);
         }
     }
     closedir(dir);
-    __sync_fetch_and_add(&handled_dir_num, 1);
+    atomic_fetch_add_explicit(&handled_dir_num, 1, memory_order_acq_rel);
 }
 
-
 void* match_pattern(void* data) {
-    struct List* matched_files_local = (struct List*) malloc(sizeof(struct List));
+    struct List* matched_files_local = (struct List*)malloc(sizeof(struct List));
     init_list(matched_files_local);
 
     while (!finish) {
@@ -74,7 +72,6 @@ void* match_pattern(void* data) {
     return matched_files_local;
 }
 
-
 _Bool pattern_matched(char* file_path) {
     // extract filename from the path
     char* filename = basename(file_path);
@@ -86,16 +83,15 @@ _Bool pattern_matched(char* file_path) {
     if (p_len == 1 && pattern[0] == '*') {
         return true;
 
-    // *text*
+        // *text*
     } else if (pattern[0] == '*' && pattern[p_len - 1] == '*') {
         // -2 to excludes the '*'
         return KMPSearch(filename, f_len, pattern + 1, p_len - 2);
 
-    // *text
+        // *text
     } else if (pattern[0] == '*') {
         // -1 to exclude the '*'
-        if (p_len - 1 > f_len)
-            return false;
+        if (p_len - 1 > f_len) return false;
 
         int i = f_len - 1, j = p_len - 1;
         while (j >= 0 && filename[i] == pattern[j]) {
@@ -105,12 +101,12 @@ _Bool pattern_matched(char* file_path) {
 
         return j == 0;  // stops at the index of '*'
 
-    // text*
+        // text*
     } else if (pattern[p_len - 1] == '*') {
         // -1 to exclude the '*'
         return (p_len - 1) <= f_len && strncmp(filename, pattern, p_len - 1) == 0;
 
-    // text
+        // text
     } else {
         return p_len == f_len && strncmp(filename, pattern, p_len) == 0;
     }
