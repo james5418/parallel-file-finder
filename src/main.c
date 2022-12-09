@@ -42,14 +42,18 @@ int main(int argc, char* argv[]) {
         } else if (ret == -1 && errno == EAGAIN) {
             int requested = atomic_load_explicit(&requested_dir_num, memory_order_acquire);
             int handled = atomic_load_explicit(&handled_dir_num, memory_order_acquire);
-            if (requested == handled && is_empty_ringbuf(&file_queue)) {
-                finish = true;
+            if (requested == handled) {
+                if (is_empty_ringbuf(&file_queue)) {
+                    finish = true;
 
-                // wake all threads
-                for (int i = 0; i < dir_thread_num; i++) sem_post(&dir_queue_sem);
-                for (int i = 0; i < file_thread_num; i++) sem_post(&file_queue_sem);
+                    // wake all threads
+                    for (int i = 0; i < dir_thread_num; i++) sem_post(&dir_queue_sem);
+                    for (int i = 0; i < file_thread_num; i++) sem_post(&file_queue_sem);
 
-                break;
+                    break;
+                } else {
+                    sem_post(&file_queue_sem);
+                }
             }
         }
     }

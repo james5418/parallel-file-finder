@@ -62,6 +62,9 @@ void* match_pattern(void* data) {
         if (finish) break;
 
         char* file_path = pop_ringbuf(&file_queue);
+        if (!file_path) {
+            continue;
+        }
         if (pattern_matched(file_path))
             append_list(matched_files_local, file_path);
         else {
