@@ -64,8 +64,6 @@ int main(int argc, char* argv[]) {
 }
 
 void init(void) {
-    thread_num = 4;
-
     sem_init(&dir_queue_sem, 0, 0);
     sem_init(&file_queue_sem, 0, 0);
 

@@ -12,6 +12,7 @@ void parse_args(int argc, char *argv[]) {
 
     pattern = NULL;
     starting_dir = NULL;
+    thread_num = 4;
 
     while ((opt = getopt(argc, argv, "p:d:t:")) != -1) {
         switch (opt) {
@@ -22,7 +23,7 @@ void parse_args(int argc, char *argv[]) {
             copy_string(&starting_dir, optarg);
             break;
         case 't':
-            thread_num = (int)strtol(optarg, NULL, 10);
+            thread_num = (int) strtol(optarg, NULL, 10);
             break;
         default:
             print_usage_and_exit(argv[0]);
