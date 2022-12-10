@@ -20,4 +20,6 @@ void join_threads(pthread_t tids[], int T, void* (*post_hook)(void*));
 
 void* merge_lists(void* list);
 
+void init_round_robin(int size);
+
 #endif

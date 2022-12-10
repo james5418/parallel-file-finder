@@ -5,16 +5,18 @@
 char* pattern;
 char* starting_dir;
 int thread_num;
+int round_size;
+atomic_uintptr_t round_base = ATOMIC_VAR_INIT(0);
 
 _Bool finish = false;
 sem_t dir_queue_sem;
-sem_t file_queue_sem;
+sem_t* file_queue_sems;
 
 atomic_int requested_dir_num = ATOMIC_VAR_INIT(1);
 atomic_int handled_dir_num = ATOMIC_VAR_INIT(0);
 
 struct ringbuf dir_queue;
-struct ringbuf file_queue;
+struct ringbuf* file_queues;
 
 struct List matched_files;
 
@@ -26,6 +28,7 @@ int main(int argc, char* argv[]) {
     int dir_thread_num = thread_num - file_thread_num - 1;  // reserve 1 for the main thread
     pthread_t dir_tids[dir_thread_num];
     pthread_t file_tids[file_thread_num];
+    init_round_robin(file_thread_num);
 
     create_threads(dir_tids, dir_thread_num, read_directory);
     create_threads(file_tids, file_thread_num, match_pattern);
@@ -43,12 +46,16 @@ int main(int argc, char* argv[]) {
             int requested = atomic_load_explicit(&requested_dir_num, memory_order_relaxed);
             int handled = atomic_load_explicit(&handled_dir_num, memory_order_relaxed);
             if (requested == handled) {
-                if (is_empty_ringbuf(&file_queue)) {
+                bool result = true;
+                for (int i = 0; i < round_size; i++) {
+                    result = result && is_empty_ringbuf(&file_queues[i]);
+                }
+                if (result) {
                     finish = true;
 
                     // wake all threads
                     for (int i = 0; i < dir_thread_num; i++) sem_post(&dir_queue_sem);
-                    for (int i = 0; i < file_thread_num; i++) sem_post(&file_queue_sem);
+                    for (int i = 0; i < file_thread_num; i++) sem_post(&file_queue_sems[i]);
 
                     break;
                 }
@@ -70,14 +77,22 @@ int main(int argc, char* argv[]) {
 
 void init(void) {
     sem_init(&dir_queue_sem, 0, 0);
-    sem_init(&file_queue_sem, 0, 0);
 
     init_ringbuf(&dir_queue);
-    init_ringbuf(&file_queue);
 
     init_list(&matched_files);
 
     atexit(clean);
+}
+
+void init_round_robin(int size) {
+    round_size = size;
+    file_queues = calloc(size, sizeof(struct ringbuf));
+    file_queue_sems = calloc(size, sizeof(sem_t));
+    for (int i = 0; i < size; i++) {
+        init_ringbuf(&file_queues[i]);
+        sem_init(&file_queue_sems[i], 0, 0);
+    }
 }
 
 void clean(void) {
@@ -85,17 +100,23 @@ void clean(void) {
     free(starting_dir);
 
     sem_destroy(&dir_queue_sem);
-    sem_destroy(&file_queue_sem);
 
     destroy_ringbuf(&dir_queue);
-    destroy_ringbuf(&file_queue);
 
+    for (int i = 0; i < round_size; i++) {
+        sem_destroy(&file_queue_sems[i]);
+        destroy_ringbuf(&file_queues[i]);
+    }
+    free(file_queues);
+    free(file_queue_sems);
     // it also frees the memory space allocated for the file paths
     destroy_list(&matched_files);
 }
 
 void create_threads(pthread_t tids[], int T, void* (*work)(void*)) {
-    for (int i = 0; i < T; i++) pthread_create(tids + i, NULL, work, NULL);
+    for (int i = 0; i < T; i++) {
+        pthread_create(tids + i, NULL, work, NULL);
+    }
 }
 
 void join_threads(pthread_t tids[], int T, void* (*post_hook)(void*)) {

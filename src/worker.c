@@ -1,5 +1,11 @@
 #include "worker.h"
 
+atomic_int id_base = ATOMIC_VAR_INIT(0);
+
+uintptr_t round_robin() {
+    return atomic_fetch_add_explicit(&round_base, 1, memory_order_acq_rel) % round_size;
+}
+
 void* read_directory(void* data) {
     char* dir_path;
 
@@ -45,8 +51,9 @@ void scan_directory(char* dir_path) {
             sem_post(&dir_queue_sem);
             atomic_fetch_add_explicit(&requested_dir_num, 1, memory_order_acq_rel);
         } else {
-            push_ringbuf(&file_queue, entry_path);
-            sem_post(&file_queue_sem);
+            uintptr_t id = round_robin();
+            push_ringbuf(&file_queues[id], entry_path);
+            sem_post(&file_queue_sems[id]);
         }
     }
     closedir(dir);
@@ -54,14 +61,15 @@ void scan_directory(char* dir_path) {
 }
 
 void* match_pattern(void* data) {
+    int id = atomic_fetch_add_explicit(&id_base, 1, memory_order_acq_rel) % round_size;
     struct List* matched_files_local = (struct List*)malloc(sizeof(struct List));
     init_list(matched_files_local);
 
     while (!finish) {
-        sem_wait(&file_queue_sem);
+        sem_wait(&file_queue_sems[id]);
         if (finish) break;
 
-        char* file_path = pop_ringbuf(&file_queue);
+        char* file_path = pop_ringbuf(&file_queues[id]);
         if (!file_path) {
             continue;
         }
