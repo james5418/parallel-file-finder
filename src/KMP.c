@@ -2,7 +2,7 @@
 
 // Reference: https://www.geeksforgeeks.org/kmp-algorithm-for-pattern-searching/
 
-_Bool KMPSearch(char* text, size_t n, char* pattern, size_t m) {
+bool KMPSearch(char* text, size_t n, char* pattern, size_t m) {
     // create lps[] that will hold the longest prefix suffix values for pattern
     int* lps = alloca(sizeof(int) * m);
 

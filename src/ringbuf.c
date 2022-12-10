@@ -54,7 +54,7 @@ char* pop_ringbuf(struct ringbuf* ringbuf) {
     return result;
 }
 
-_Bool is_empty_ringbuf(struct ringbuf* ringbuf) {
+bool is_empty_ringbuf(struct ringbuf* ringbuf) {
     bool result;
     pthread_mutex_lock(&ringbuf->mutex);
     result = ringbuf->head == ringbuf->tail;

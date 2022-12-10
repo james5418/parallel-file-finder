@@ -83,7 +83,7 @@ void* match_pattern(void* data) {
     return matched_files_local;
 }
 
-_Bool pattern_matched(char* file_path) {
+bool pattern_matched(char* file_path) {
     // extract filename from the path
     char* filename = basename(file_path);
 
