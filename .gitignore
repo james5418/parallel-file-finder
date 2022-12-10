@@ -1,4 +1,12 @@
+# Binaries
 objs/
 pp-find
+
+# LSP
 compile_flags.txt
 .ccls-cache/
+
+# Test
+test/*
+!test/build.py
+!test/test.sh
