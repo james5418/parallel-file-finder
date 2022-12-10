@@ -2,7 +2,7 @@
 
 ## `pp-find`
 ```
-Usage: ./pp-find -p <pattern> [-d <starting directory>] [-t <thread number>]
+Usage: pp-find -p <pattern> [-d <starting directory>] [-t <thread number>]
 ```
 
 ## `build.py`
@@ -15,4 +15,9 @@ options:
   -m [M]      number of directories at each level that can grow subdirectories (default: 2)
   -d [D]      depth of this structure (default: 3)
   -f [F]      number of files per level (default: 5)
+```
+
+## `test.sh`
+```
+Usage: test.sh <starting directory> <pattern>
 ```
