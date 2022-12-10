@@ -6,7 +6,7 @@ char* pattern;
 char* starting_dir;
 int thread_num;
 
-_Bool finish = false;
+bool finish = false;
 sem_t dir_queue_sem;
 sem_t file_queue_sem;
 

@@ -10,6 +10,7 @@
 #include <libgen.h>
 #include <pthread.h>
 #include <stdatomic.h>
+#include <stdbool.h>
 
 #include "list.h"
 #include "ringbuf.h"
@@ -19,7 +20,7 @@
 
 extern char* pattern;
 
-extern _Bool finish;
+extern bool finish;
 extern sem_t dir_queue_sem;
 extern sem_t file_queue_sem;
 
@@ -33,6 +34,6 @@ void* read_directory(void*);
 void* match_pattern(void*);
 
 void scan_directory(char*);
-_Bool pattern_matched(char*);
+bool pattern_matched(char*);
 
 #endif
