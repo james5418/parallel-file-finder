@@ -26,16 +26,17 @@ void push_ringbuf(struct ringbuf* ringbuf, char* item) {
         new_tail = (tail + 1) & ringbuf->mask;
         if (new_tail != ringbuf->head) {
             ringbuf->tail = new_tail;
+            ringbuf->buf[tail] = item;
             pthread_mutex_unlock(&ringbuf->mutex);
-            break;
+            return;
         }
         pthread_mutex_unlock(&ringbuf->mutex);
     }
-    ringbuf->buf[tail] = item;
 }
 
 char* pop_ringbuf(struct ringbuf* ringbuf) {
     uint64_t head;
+    char* result;
     // Cache current head val and guard increment by mutex.
     pthread_mutex_lock(&ringbuf->mutex);
     head = ringbuf->head;
@@ -44,9 +45,9 @@ char* pop_ringbuf(struct ringbuf* ringbuf) {
         return NULL;
     }
     ringbuf->head = (head + 1) & ringbuf->mask;
-    pthread_mutex_unlock(&ringbuf->mutex);
-    char* result = ringbuf->buf[head];
+    result = ringbuf->buf[head];
     ringbuf->buf[head] = NULL;
+    pthread_mutex_unlock(&ringbuf->mutex);
     return result;
 }
 
