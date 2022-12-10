@@ -7,7 +7,10 @@ void init_ringbuf(struct ringbuf* ringbuf) {
     ringbuf->tail = 0;
     ringbuf->capacity = SIZE;  // Default SIZE in ringbuf.h
     ringbuf->mask = SIZE - 1;
-    pthread_mutex_init(&ringbuf->mutex, NULL);
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+    pthread_mutex_init(&ringbuf->mutex, &attr);
     ringbuf->buf = calloc(SIZE, sizeof(char*));
 }
 
