@@ -20,8 +20,10 @@ FD=outputs/fd.out
 find "$1" -type f -name "$2" | sort > $FIND
 fd -t f -s -g "$2" "$1" | sort > $FD
 
+echo "Comparing our output and that of 'find'..."
 diff $OURS $FIND
-[ $? -eq 0 ] && echo "our output was same as that of 'find'"
+[ $? -eq 0 ] && echo "It was the same."
 
+echo "Comparing our output and that of 'fd'..."
 diff $OURS $FD
-[ $? -eq 0 ] && echo "our output was same as that of 'fd'"
+[ $? -eq 0 ] && echo "It was the same."
