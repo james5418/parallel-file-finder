@@ -40,8 +40,8 @@ int main(int argc, char* argv[]) {
             scan_directory(dir_path);
             free(dir_path);  // no longer need it
         } else if (ret == -1 && errno == EAGAIN) {
-            int requested = atomic_load_explicit(&requested_dir_num, memory_order_acquire);
-            int handled = atomic_load_explicit(&handled_dir_num, memory_order_acquire);
+            int requested = atomic_load_explicit(&requested_dir_num, memory_order_relaxed);
+            int handled = atomic_load_explicit(&handled_dir_num, memory_order_relaxed);
             if (requested == handled) {
                 if (is_empty_ringbuf(&file_queue)) {
                     finish = true;
@@ -51,8 +51,6 @@ int main(int argc, char* argv[]) {
                     for (int i = 0; i < file_thread_num; i++) sem_post(&file_queue_sem);
 
                     break;
-                } else {
-                    sem_post(&file_queue_sem);
                 }
             }
         }
@@ -62,7 +60,10 @@ int main(int argc, char* argv[]) {
     join_threads(file_tids, file_thread_num, merge_lists);
 
     struct ListNode* curr = matched_files.head;
-    for (; curr; curr = curr->next) puts(curr->file_path);
+    for (; curr; curr = curr->next) {
+        fputs(curr->file_path, stdout);
+        fputc('\n', stdout);
+    }
 
     return 0;
 }

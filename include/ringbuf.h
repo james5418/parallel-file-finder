@@ -1,15 +1,19 @@
 #ifndef RINGBUF_H_
 #define RINGBUF_H_
 
-#include <stdlib.h>
-#include <stdint.h>
+#include <pthread.h>
 #include <stdbool.h>
-#include <stdatomic.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+#define SIZE 65536
 
 struct ringbuf {
-    _Atomic(uint64_t) head;
-    _Atomic(uint64_t) tail;
+    uint64_t head __attribute__((aligned(64)));
+    uint64_t tail __attribute__((aligned(64)));
     uint64_t capacity;
+    uint64_t mask;
+    pthread_mutex_t mutex;
     char** buf;
 };
 
