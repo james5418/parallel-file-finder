@@ -18,7 +18,7 @@ FD=outputs/fd.out
 
 ../pp-find -d "$1" -p "$2" -t 8 | sort > $OURS
 find "$1" -type f -name "$2" | sort > $FIND
-fd -I -t f -s -g "$2" "$1" | sort > $FD
+fd -I -H -t f -s -g "$2" "$1" | sort > $FD
 
 echo "Comparing our output and that of 'find'..."
 diff $OURS $FIND
