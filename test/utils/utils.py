@@ -3,12 +3,38 @@ import string
 import random
 from datetime import datetime
 
-chars = string.ascii_letters + string.digits
 random.seed(datetime.now().timestamp())
 
+chars = string.ascii_letters + string.digits
+
+adjs = [
+    'monumental',
+    'sleepy',
+    'useful',
+    'total',
+    'super',
+    'nautical',
+    'muted',
+    'gracious',
+    'chief',
+    'stale'
+]
+nouns = [
+    'insect',
+    'volume',
+    'chest',
+    'concept',
+    'roof',
+    'analysis',
+    'transition',
+    'law',
+    'responsibility',
+    'bear'
+]
+
 def get_rand_name():
-    name = ''
-    for _ in range(10):
+    name = f'{ random.choice(adjs) }_{ random.choice(nouns) }_'
+    for _ in range(5):
         name += random.choice(chars)
     return name
 
