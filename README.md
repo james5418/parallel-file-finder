@@ -14,6 +14,7 @@ options:
   -n [N]      number of directories per level (default: 2)
   -m [M]      number of directories at each level that can grow subdirectories (default: N)
   -d [D]      depth of this structure (default: 3)
+  -l [L]      files should first appear at which level (default: 0)
   -f [F]      number of files per level (default: 5)
   -b          whether to put every directory behind files
 ```

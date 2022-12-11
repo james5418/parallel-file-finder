@@ -24,7 +24,7 @@ if __name__ == '__main__':
                         help='number of files per level (default: 5)')
     args = parser.parse_args()
 
-    root = get_unique_name(f'list_{ args.d }_{ args.f }')
+    root = get_unique_name(f'list_d{ args.d }_f{ args.f }')
     os.mkdir(root)
 
     build(root, args.d, args.f)
