@@ -45,8 +45,15 @@ if __name__ == '__main__':
     if args.m is None:
         args.m = args.n
 
-    struct_type = 'balanced' if args.n == args.m else 'imbalanced'
+    if args.n == 1:
+        struct_type = 'list'
+    elif args.n == args.m:
+        struct_type = 'balanced'
+    else:
+        struct_type = 'imbalanced'
+
     base_root = f'{ struct_type }_n{ args.n }_m{ args.m }_d{ args.d }_l{ args.l }_f{ args.f }'
+
     if args.b:
         base_root += '-behind'
 
