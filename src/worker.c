@@ -1,12 +1,10 @@
 #include "worker.h"
 
-atomic_int id_base = ATOMIC_VAR_INIT(0);
-
 uintptr_t round_robin() {
     return atomic_fetch_add_explicit(&round_base, 1, memory_order_acq_rel) % round_size;
 }
 
-void* read_directory(void* data) {
+void* read_directory(void* tid) {
     char* dir_path;
 
     while (!finish) {
@@ -29,11 +27,6 @@ void scan_directory(char* dir_path) {
         fprintf(stderr, "Cannot open %s\n", dir_path);
         atomic_fetch_add_explicit(&handled_dir_num, 1, memory_order_acq_rel);
         return;
-    }
-
-    int end = strlen(dir_path) - 1;
-    if (dir_path[end] == '/') {
-        dir_path[end] = '\0';
     }
 
     while ((dent = readdir(dir)) != NULL) {
@@ -60,8 +53,8 @@ void scan_directory(char* dir_path) {
     atomic_fetch_add_explicit(&handled_dir_num, 1, memory_order_acq_rel);
 }
 
-void* match_pattern(void* data) {
-    int id = atomic_fetch_add_explicit(&id_base, 1, memory_order_acq_rel) % round_size;
+void* match_pattern(void* tid) {
+    uint64_t id = (uint64_t) tid;
     struct List* matched_files_local = (struct List*)malloc(sizeof(struct List));
     init_list(matched_files_local);
 

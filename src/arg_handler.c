@@ -14,13 +14,15 @@ void parse_args(int argc, char *argv[]) {
     starting_dir = NULL;
     thread_num = 4;
 
+    size_t starting_dir_len = 0;
+
     while ((opt = getopt(argc, argv, "p:d:t:")) != -1) {
         switch (opt) {
         case 'p':
             copy_string(&pattern, optarg);
             break;
         case 'd':
-            copy_string(&starting_dir, optarg);
+            starting_dir_len = copy_string(&starting_dir, optarg);
             break;
         case 't':
             thread_num = (int) strtol(optarg, NULL, 10);
@@ -46,12 +48,19 @@ void parse_args(int argc, char *argv[]) {
         fprintf(stderr, "Directory does not exist: %s\n", starting_dir);
         exit(1);
     }
+
+    // remove trailing slash for the directory
+    int end = starting_dir_len - 1;
+    if (starting_dir[end] == '/') {
+        starting_dir[end] = '\0';
+    }
 }
 
-void copy_string(char **dst, const char *src) {
+size_t copy_string(char **dst, const char *src) {
     size_t n = strlen(src) + 1;
     *dst = (char *) malloc(sizeof(char) * n);
     strncpy(*dst, src, n);
+    return n - 1;
 }
 
 void print_usage_and_exit(char *exe_name) {

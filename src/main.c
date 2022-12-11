@@ -1,7 +1,5 @@
 #include "main.h"
 
-#include <pthread.h>
-
 char* pattern;
 char* starting_dir;
 int thread_num;
@@ -46,11 +44,14 @@ int main(int argc, char* argv[]) {
             int requested = atomic_load_explicit(&requested_dir_num, memory_order_relaxed);
             int handled = atomic_load_explicit(&handled_dir_num, memory_order_relaxed);
             if (requested == handled) {
-                bool result = true;
+                bool all_empty = true;
                 for (int i = 0; i < round_size; i++) {
-                    result = result && is_empty_ringbuf(&file_queues[i]);
+                    if (!is_empty_ringbuf(&file_queues[i])) {
+                        all_empty = false;
+                        break;
+                    }
                 }
-                if (result) {
+                if (all_empty) {
                     finish = true;
 
                     // wake all threads
@@ -109,13 +110,14 @@ void clean(void) {
     }
     free(file_queues);
     free(file_queue_sems);
+
     // it also frees the memory space allocated for the file paths
     destroy_list(&matched_files);
 }
 
 void create_threads(pthread_t tids[], int T, void* (*work)(void*)) {
-    for (int i = 0; i < T; i++) {
-        pthread_create(tids + i, NULL, work, NULL);
+    for (uint64_t i = 0; i < T; i++) {
+        pthread_create(tids + i, NULL, work, (void*) i);
     }
 }
 
