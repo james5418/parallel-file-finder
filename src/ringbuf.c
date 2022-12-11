@@ -11,6 +11,7 @@ void init_ringbuf(struct ringbuf* ringbuf) {
     pthread_mutexattr_init(&attr);
     pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
     pthread_mutex_init(&ringbuf->mutex, &attr);
+    pthread_cond_init(&ringbuf->writable, NULL);
     ringbuf->buf = calloc(SIZE, sizeof(char*));
 }
 
@@ -19,22 +20,17 @@ void destroy_ringbuf(struct ringbuf* ringbuf) {
     free(ringbuf->buf);
     ringbuf->buf = NULL;
     pthread_mutex_destroy(&ringbuf->mutex);
+    pthread_cond_destroy(&ringbuf->writable);
 }
 
 void push_ringbuf(struct ringbuf* ringbuf, char* item) {
-    uint64_t new_tail, tail;
-    while (true) {
-        pthread_mutex_lock(&ringbuf->mutex);
-        tail = ringbuf->tail;
-        new_tail = (tail + 1) & ringbuf->mask;
-        if (new_tail != ringbuf->head) {
-            ringbuf->tail = new_tail;
-            ringbuf->buf[tail] = item;
-            pthread_mutex_unlock(&ringbuf->mutex);
-            return;
-        }
-        pthread_mutex_unlock(&ringbuf->mutex);
+    pthread_mutex_lock(&ringbuf->mutex);
+    while (((ringbuf->tail + 1) & ringbuf->mask) == ringbuf->head) {
+        pthread_cond_wait(&ringbuf->writable, &ringbuf->mutex);
     }
+    ringbuf->buf[ringbuf->tail] = item;
+    ringbuf->tail = (ringbuf->tail + 1) & ringbuf->mask;
+    pthread_mutex_unlock(&ringbuf->mutex);
 }
 
 char* pop_ringbuf(struct ringbuf* ringbuf) {
