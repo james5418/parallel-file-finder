@@ -43,7 +43,7 @@ void scan_directory(char* dir_path) {
             push_ringbuf(&dir_queue, entry_path);
             sem_post(&dir_queue_sem);
             atomic_fetch_add_explicit(&requested_dir_num, 1, memory_order_acq_rel);
-        } else {
+        } else if (S_ISREG(st.st_mode)) {
             uintptr_t id = round_robin();
             push_ringbuf(&file_queues[id], entry_path);
             sem_post(&file_queue_sems[id]);
