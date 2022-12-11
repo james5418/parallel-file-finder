@@ -30,6 +30,7 @@ void push_ringbuf(struct ringbuf* ringbuf, char* item) {
     }
     ringbuf->buf[ringbuf->tail] = item;
     ringbuf->tail = (ringbuf->tail + 1) & ringbuf->mask;
+    pthread_cond_broadcast(&ringbuf->writable);
     pthread_mutex_unlock(&ringbuf->mutex);
 }
 
