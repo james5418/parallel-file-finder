@@ -8,5 +8,7 @@ compile_flags.txt
 
 # Test
 test/*
-!test/build.py
-!test/test.sh
+!test/*.py
+!test/*.sh
+!test/utils
+test/utils/__pycache__

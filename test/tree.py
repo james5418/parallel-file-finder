@@ -1,27 +1,12 @@
 #!/usr/bin/env python3
 import os
-import sys
 import argparse
-import string
-import random
-from datetime import datetime
-
-chars = string.ascii_letters + string.digits
-
-def rand_name():
-    name = ''
-    for i in range(10):
-        name += random.choice(chars)
-    return name
-
-def touch(path):
-    with open(path, 'w') as f:
-        pass
+from utils.utils import *
 
 def build(curr_path, curr_d, n, m, d, f):
     # create files
     for i in range(f):
-        file_path = f'{ curr_path }/f_{ rand_name() }'
+        file_path = f'{ curr_path }/f_{ get_rand_name() }'
         touch(file_path)
 
     if curr_d == d:
@@ -29,7 +14,7 @@ def build(curr_path, curr_d, n, m, d, f):
 
     # create subdirs
     for i in range(n):
-        dir_path = f'{ curr_path }/d_{ rand_name() }'
+        dir_path = f'{ curr_path }/d_{ get_rand_name() }'
         os.mkdir(dir_path)
         next_d = curr_d + 1 if i < m else d
         build(dir_path, next_d, n, m, d, f)
@@ -52,13 +37,8 @@ if __name__ == '__main__':
     struct_type = 'balanced' if args.n == args.m else 'imbalanced'
     base_root = f'{ struct_type }_{ args.n }_{ args.m }_{ args.d }_{ args.f }'
 
-    root = base_root
-    sn = 1
-    while os.path.isdir(root):
-        root = f'{ base_root }-{ sn }'
-        sn += 1
+    root = get_unique_name(base_root)
     os.mkdir(root)
 
-    random.seed(datetime.now().timestamp())
     build(root, 0, args.n, args.m, args.d, args.f)
     print(f'Directory structure "{ root }" was created.')
