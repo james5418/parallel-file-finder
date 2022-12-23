@@ -30,7 +30,6 @@ void push_ringbuf(struct ringbuf* ringbuf, char* item) {
     }
     ringbuf->buf[ringbuf->tail] = item;
     ringbuf->tail = (ringbuf->tail + 1) & ringbuf->mask;
-    pthread_cond_broadcast(&ringbuf->writable);
     pthread_mutex_unlock(&ringbuf->mutex);
 }
 
@@ -47,6 +46,7 @@ char* pop_ringbuf(struct ringbuf* ringbuf) {
     ringbuf->head = (head + 1) & ringbuf->mask;
     result = ringbuf->buf[head];
     ringbuf->buf[head] = NULL;
+    pthread_cond_broadcast(&ringbuf->writable);
     pthread_mutex_unlock(&ringbuf->mutex);
     return result;
 }
